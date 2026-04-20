@@ -4,3 +4,5 @@ language-tool-python
 nltk
 werkzeug
 reportlab
+gunicorn
+textblob
