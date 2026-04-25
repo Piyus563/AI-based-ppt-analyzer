@@ -8,6 +8,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
 from reportlab.lib.units import cm
 import io
+import uuid
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -41,10 +42,16 @@ def analyze():
         file.save(filepath)
         
         try:
-            # Perform AI NLP Analysis on the uploaded PPTX
-            results = analyze_presentation(filepath)
+            fixed_filename = f"fixed_{uuid.uuid4().hex}.pptx"
+            fixed_filepath = os.path.join(app.config['UPLOAD_FOLDER'], fixed_filename)
             
-            # Clean up the file after analysis to save space
+            # Perform AI NLP Analysis on the uploaded PPTX
+            results = analyze_presentation(filepath, fixed_filepath=fixed_filepath)
+            
+            if results.get('fixed_file_available'):
+                results['fixed_file_url'] = f"/download/{fixed_filename}"
+            
+            # Clean up the original file after analysis to save space
             os.remove(filepath)
             
             return jsonify(results)
@@ -55,6 +62,13 @@ def analyze():
             return jsonify({'error': str(e)}), 500
             
     return jsonify({'error': 'Invalid file type. Only .pptx is allowed.'}), 400
+
+@app.route('/download/<filename>')
+def download_fixed(filename):
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename))
+    if os.path.exists(filepath):
+        return send_file(filepath, as_attachment=True, download_name="Corrected_Presentation.pptx")
+    return jsonify({'error': 'File not found.'}), 404
 
 @app.route('/generate-pdf', methods=['POST'])
 def generate_pdf():

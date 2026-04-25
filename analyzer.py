@@ -34,6 +34,27 @@ def extract_text_from_ppt(filepath):
         
     return slides_data
 
+def fix_presentation_and_save(input_filepath, output_filepath):
+    """
+    Creates a new PPT with corrected text while keeping the same design.
+    """
+    try:
+        prs = Presentation(input_filepath)
+        for slide in prs.slides:
+            for shape in slide.shapes:
+                if hasattr(shape, "text_frame") and shape.text_frame:
+                    for paragraph in shape.text_frame.paragraphs:
+                        for run in paragraph.runs:
+                            if run.text and run.text.strip():
+                                # Correct the text using TextBlob
+                                corrected_text = str(TextBlob(run.text).correct())
+                                run.text = corrected_text
+        prs.save(output_filepath)
+        return True
+    except Exception as e:
+        print(f"Error fixing presentation: {e}")
+        return False
+
 def analyze_slide_length(text):
     """
     Analyzes if the slide has too much or too little text.
@@ -145,7 +166,7 @@ def count_syllables(word):
         prev_vowel = is_vowel
     return max(1, count)
 
-def analyze_presentation(filepath):
+def analyze_presentation(filepath, fixed_filepath=None):
     slides_data = extract_text_from_ppt(filepath)
     analysis_results = {
         'slide_analysis': [],
@@ -183,4 +204,13 @@ def analyze_presentation(filepath):
         score_deductions += len([f for f in flow_feedback if "Weak transition" in f]) * 0.5
     final_score = max(0.0, 10.0 - (score_deductions / max(1, (total_slides / 5))))
     analysis_results['overall_score'] = round(final_score, 1)
+    
+    # Generate the fixed presentation
+    if fixed_filepath:
+        success = fix_presentation_and_save(filepath, fixed_filepath)
+        if success:
+            analysis_results['fixed_file_available'] = True
+        else:
+            analysis_results['fixed_file_available'] = False
+
     return analysis_results

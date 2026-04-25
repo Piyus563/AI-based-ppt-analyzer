@@ -229,6 +229,15 @@ document.addEventListener('DOMContentLoaded', () => {
         animateCount(document.getElementById('clean-slides'), cleanSlides);
         animateCount(document.getElementById('total-words'), totalWords);
 
+        // Fixed File Link
+        const fixedBtn = document.getElementById('download-fixed-btn');
+        if (data.fixed_file_url) {
+            fixedBtn.href = data.fixed_file_url;
+            fixedBtn.classList.remove('hidden');
+        } else {
+            fixedBtn.classList.add('hidden');
+        }
+
         // Flow
         const flowList = document.getElementById('flow-list');
         data.flow_feedback.forEach(fb => {
