@@ -295,3 +295,30 @@ h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem;
 
 /* Footer */
 .footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--glass-border); margin-top: 2rem; }
+
+/* ===== MOBILE RESPONSIVENESS ===== */
+@media (max-width: 600px) {
+    .container { padding: 1rem; }
+    .navbar { padding: 0.8rem 1rem; }
+    .nav-brand { font-size: 1.1rem; }
+    .nav-badge { display: none; } /* Hide badge on very small screens */
+    
+    h1 { font-size: 1.8rem; }
+    .hero-sub { font-size: 0.95rem; }
+    .hero-features { gap: 0.8rem; }
+    
+    .glass-panel { padding: 1.2rem; }
+    .upload-zone { padding: 2rem 1rem; }
+    .file-name-display { flex-direction: column; text-align: center; padding: 0.8rem; }
+    
+    .results-overview { flex-direction: column; gap: 1.5rem; }
+    .divider-v { width: 100%; height: 1px; }
+    
+    .action-btns { flex-direction: column; gap: 0.8rem; }
+    .btn { width: 100%; justify-content: center; }
+    
+    .filter-tabs { flex-direction: column; }
+    .tab-btn { width: 100%; justify-content: center; }
+    
+    .slide-header { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+}
