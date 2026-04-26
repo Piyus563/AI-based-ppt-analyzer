@@ -1,7 +1,5 @@
 flask
 python-pptx
-language-tool-python
-nltk
 werkzeug
 reportlab
 gunicorn

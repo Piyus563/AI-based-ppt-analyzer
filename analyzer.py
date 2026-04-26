@@ -1,18 +1,19 @@
-import os
-import nltk
+import re
 from pptx import Presentation
 from textblob import TextBlob
 
-# Ensure NLTK resources are downloaded
-try:
-    nltk.data.find('tokenizers/punkt')
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    nltk.download('punkt', quiet=True)
-    nltk.download('stopwords', quiet=True)
+STOP_WORDS = {
+    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has',
+    'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was',
+    'were', 'will', 'with', 'this', 'these', 'those', 'or', 'but', 'if',
+    'then', 'than', 'so', 'we', 'you', 'your', 'our', 'their', 'they',
+    'i', 'me', 'my', 'us', 'about', 'into', 'over', 'after', 'before',
+    'can', 'could', 'should', 'would', 'may', 'might', 'must', 'not'
+}
 
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+
+def tokenize_words(text):
+    return re.findall(r"[A-Za-z0-9']+", text)
 
 def extract_text_from_ppt(filepath):
     """
@@ -60,7 +61,7 @@ def analyze_slide_length(text):
     Analyzes if the slide has too much or too little text.
     Ideal length: between 10 and 60 words for a good presentation.
     """
-    words = word_tokenize(text)
+    words = tokenize_words(text)
     word_count = len(words)
     
     if word_count == 0:
@@ -102,7 +103,6 @@ def analyze_flow(slides_data):
     Basic flow analysis: checks if consecutive slides share common keywords
     to ensure smooth transition.
     """
-    stop_words = set(stopwords.words('english'))
     flow_feedback = []
     
     prev_keywords = set()
@@ -113,8 +113,8 @@ def analyze_flow(slides_data):
             prev_keywords = set()
             continue
             
-        words = word_tokenize(text.lower())
-        keywords = {w for w in words if w.isalnum() and w not in stop_words}
+        words = tokenize_words(text.lower())
+        keywords = {w for w in words if w.isalnum() and w not in STOP_WORDS}
         
         if slide_num > 1 and prev_keywords:
             overlap = prev_keywords.intersection(keywords)
@@ -129,9 +129,8 @@ def analyze_flow(slides_data):
     return flow_feedback
 
 def get_top_keywords(text, n=6):
-    stop_words = set(stopwords.words('english'))
-    words = word_tokenize(text.lower())
-    keywords = [w for w in words if w.isalpha() and w not in stop_words and len(w) > 3]
+    words = tokenize_words(text.lower())
+    keywords = [w for w in words if w.isalpha() and w not in STOP_WORDS and len(w) > 3]
     freq = {}
     for w in keywords:
         freq[w] = freq.get(w, 0) + 1
@@ -139,7 +138,7 @@ def get_top_keywords(text, n=6):
     return [{'word': w, 'count': c} for w, c in sorted_kw[:n]]
 
 def get_readability_score(text):
-    words = word_tokenize(text)
+    words = tokenize_words(text)
     sentences = text.split('.')
     sentences = [s.strip() for s in sentences if s.strip()]
     word_count = len(words)

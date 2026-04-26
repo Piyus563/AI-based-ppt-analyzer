@@ -92,7 +92,7 @@ def generate_pdf():
     story = []
 
     # Title
-    story.append(Paragraph('AI PPT Analyzer — Report', title_style))
+    story.append(Paragraph('AI PPT Analyzer - Report', title_style))
     story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#e2e8f0')))
     story.append(Spacer(1, 0.4*cm))
 
@@ -128,7 +128,7 @@ def generate_pdf():
     story.append(HRFlowable(width='100%', thickness=0.5, color=colors.HexColor('#e2e8f0')))
     story.append(Spacer(1, 0.2*cm))
     for fb in data.get('flow_feedback', []):
-        bullet = '⚠ ' if 'Weak' in fb or 'Missing' in fb else '✓ '
+        bullet = 'Warning: ' if 'Weak' in fb or 'Missing' in fb else 'OK: '
         style = error_style if 'Weak' in fb else success_style
         story.append(Paragraph(bullet + fb, style))
     story.append(Spacer(1, 0.6*cm))
@@ -144,10 +144,10 @@ def generate_pdf():
         story.append(Paragraph(f"Content: {slide['length_feedback']}  |  Words: {slide['word_count']}", normal_style))
 
         if slide['error_count'] == 0:
-            story.append(Paragraph('✓ No grammar issues found.', success_style))
+            story.append(Paragraph('OK: No grammar issues found.', success_style))
         else:
             for err in slide['grammar_errors']:
-                story.append(Paragraph(f"✗ {err['message']} — Context: \"{err['context']}\"", error_style))
+                story.append(Paragraph(f"Error: {err['message']} - Context: \"{err['context']}\"", error_style))
                 if err['replacements']:
                     story.append(Paragraph(f"  Suggestion: {', '.join(err['replacements'])}", success_style))
 
