@@ -3,4 +3,3 @@ python-pptx
 werkzeug
 reportlab
 gunicorn
-textblob

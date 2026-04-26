@@ -1,6 +1,5 @@
 import re
 from pptx import Presentation
-from textblob import TextBlob
 
 STOP_WORDS = {
     'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has',
@@ -11,9 +10,53 @@ STOP_WORDS = {
     'can', 'could', 'should', 'would', 'may', 'might', 'must', 'not'
 }
 
+COMMON_CORRECTIONS = {
+    'acommodate': 'accommodate',
+    'acheive': 'achieve',
+    'adress': 'address',
+    'anlyze': 'analyze',
+    'analyzee': 'analyze',
+    'beleive': 'believe',
+    'benifit': 'benefit',
+    'calender': 'calendar',
+    'comming': 'coming',
+    'definately': 'definitely',
+    'enviroment': 'environment',
+    'goverment': 'government',
+    'grammer': 'grammar',
+    'improvment': 'improvement',
+    'managment': 'management',
+    'neccessary': 'necessary',
+    'occured': 'occurred',
+    'presantation': 'presentation',
+    'recieve': 'receive',
+    'seperate': 'separate',
+    'sucess': 'success',
+    'sucessful': 'successful',
+    'teh': 'the',
+    'thier': 'their',
+    'welcom': 'welcome',
+    'writting': 'writing',
+}
+
 
 def tokenize_words(text):
     return re.findall(r"[A-Za-z0-9']+", text)
+
+
+def correct_common_text(text):
+    def replace(match):
+        word = match.group(0)
+        corrected = COMMON_CORRECTIONS.get(word.lower())
+        if not corrected:
+            return word
+        if word.isupper():
+            return corrected.upper()
+        if word[:1].isupper():
+            return corrected.capitalize()
+        return corrected
+
+    return re.sub(r"[A-Za-z']+", replace, text)
 
 def extract_text_from_ppt(filepath):
     """
@@ -47,9 +90,7 @@ def fix_presentation_and_save(input_filepath, output_filepath):
                     for paragraph in shape.text_frame.paragraphs:
                         for run in paragraph.runs:
                             if run.text and run.text.strip():
-                                # Correct the text using TextBlob
-                                corrected_text = str(TextBlob(run.text).correct())
-                                run.text = corrected_text
+                                run.text = correct_common_text(run.text)
         prs.save(output_filepath)
         return True
     except Exception as e:
@@ -80,19 +121,15 @@ def analyze_grammar(text):
     if not text.strip():
         return [], 0
     
-    blob = TextBlob(text)
     errors = []
     
-    # We check for words that TextBlob thinks are misspelled
-    for word in blob.words:
-        # A simple check: if the word's spellcheck doesn't match the original, it might be misspelled.
-        # We only take the top suggestion.
-        corrected_word = word.correct()
-        if word.lower() != corrected_word.lower() and len(word) > 2:
+    for word in tokenize_words(text):
+        corrected_word = COMMON_CORRECTIONS.get(word.lower())
+        if corrected_word and len(word) > 2:
             errors.append({
                 'message': f"Possible misspelling: '{word}'",
                 'context': f"...{word}...",
-                'replacements': [str(corrected_word)]
+                'replacements': [corrected_word]
             })
             
     # Textblob may find many false positives, so let's limit errors per slide
